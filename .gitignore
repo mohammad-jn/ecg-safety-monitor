@@ -1,0 +1,17 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+.DS_Store
+.vscode/
+
+# Data (DO NOT COMMIT RAW DATA)
+data/raw/*
+!data/raw/.gitkeep
+
+mitbih_database/*
+!mitbih_database/.gitkeep
