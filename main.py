@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 
 from src.config import MITBIH_DIR, SAMPLING_RATE_HZ, DEFAULT_LEAD
 from src.data_loader import ECGDataLoader
@@ -12,7 +13,18 @@ from src.signal_plotter import plot_ecg_with_peaks
 from src.annotation_loader import AnnotationLoader
 from src.evaluator import PeakEvaluator
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="ECG Safety Monitor")
+
+    parser.add_argument("--record", type=str, default="100", help="Record ID (e.g., 100)")
+    parser.add_argument("--lead", type=str, default="MLII", help="ECG lead (MLII or V5)")
+    parser.add_argument("--start", type=int, default=0, help="Start index for plotting")
+    parser.add_argument("--end", type=int, default=2000, help="End index for plotting")
+
+    return parser.parse_args()
+
 def main() -> None:
+    args = parse_args()
     loader = ECGDataLoader(MITBIH_DIR)
     preprocessor = ECGPreprocessor(SAMPLING_RATE_HZ)
 
@@ -21,13 +33,15 @@ def main() -> None:
     if not record_files:
         raise RuntimeError("No ECG CSV files found in mitbih_database.")
 
-    file_path = record_files[0]
+    file_path = MITBIH_DIR / f"{args.record}.csv"
     print(f"Loading record: {file_path.name}")
 
     df = loader.load_record(file_path)
 
+    available_leads = loader.get_available_leads(df)
+    print(f"Available leads: {available_leads}")
     sample_indices = loader.get_sample_indices(df)
-    raw_signal = loader.get_signal(df, lead=DEFAULT_LEAD)
+    raw_signal = loader.get_signal(df, lead=args.lead)
 
     normalized_signal = preprocessor.normalize_signal(raw_signal)
     filtered_signal = preprocessor.bandpass_filter(normalized_signal)
@@ -36,9 +50,6 @@ def main() -> None:
     print(f"Number of samples: {len(raw_signal)}")
     print(f"First sample index: {sample_indices[0]}")
     print(f"Last sample index: {sample_indices[-1]}")
-
-    start = 0
-    end = 1200
 
     detector = RPeakDetector(SAMPLING_RATE_HZ)
 
@@ -106,25 +117,25 @@ def main() -> None:
     plot_ecg_signal(
         signal=raw_signal,
         sample_indices=sample_indices,
-        title=f"Raw ECG Record {file_path.stem} - {DEFAULT_LEAD}",
-        start=start,
-        end=end,
+        title=f"Raw ECG Record {file_path.stem} - {args.lead}",
+        start=args.start,
+        end=args.end,
     )
 
     plot_ecg_signal(
         signal=normalized_signal,
         sample_indices=sample_indices,
-        title=f"Normalized ECG Record {file_path.stem} - {DEFAULT_LEAD}",
-        start=start,
-        end=end,
+        title=f"Normalized ECG Record {file_path.stem} - {args.lead}",
+        start=args.start,
+        end=args.end,
     )
 
     plot_ecg_signal(
         signal=filtered_signal,
         sample_indices=sample_indices,
-        title=f"Filtered ECG Record {file_path.stem} - {DEFAULT_LEAD}",
-        start=start,
-        end=end,
+        title=f"Filtered ECG Record {file_path.stem} - {args.lead}",
+        start=args.start,
+        end=args.end,
     )
 
     plot_ecg_with_peaks(
@@ -132,8 +143,8 @@ def main() -> None:
         peaks=peaks,
         sample_indices=sample_indices,
         title=f"R-Peaks - Record {file_path.stem}",
-        start=0,
-        end=2000,
+        start=args.start,
+        end=args.end,
     )
 
 

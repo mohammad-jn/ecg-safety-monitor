@@ -16,7 +16,7 @@ def test_get_signal_and_sample_indices():
         {
             "sample #": [0, 1, 2],
             "MLII": [995, 996, 997],
-            "V5": [1011, 1010, 1009],
+            "V1": [1011, 1010, 1009],
         }
     )
 
@@ -24,10 +24,12 @@ def test_get_signal_and_sample_indices():
 
     signal = loader.get_signal(df, lead="MLII")
     sample_indices = loader.get_sample_indices(df)
+    available_leads = loader.get_available_leads(df)
 
     assert len(signal) == 3
     assert signal[0] == 995.0
     assert sample_indices[2] == 2
+    assert available_leads == ["MLII", "V1"]
 
 
 def test_get_signal_invalid_lead():
@@ -35,7 +37,7 @@ def test_get_signal_invalid_lead():
         {
             "sample #": [0, 1],
             "MLII": [995, 996],
-            "V5": [1011, 1010],
+            "V1": [1011, 1010],
         }
     )
 

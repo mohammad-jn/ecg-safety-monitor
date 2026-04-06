@@ -20,21 +20,28 @@ class ECGDataLoader:
 
         df.columns = [col.strip().strip("'").strip('"') for col in df.columns]
 
-        expected_columns = {"sample #", "MLII", "V5"}
-        actual_columns = set(df.columns)
-
-        if not expected_columns.issubset(actual_columns):
+        if "sample #" not in df.columns:
             raise ValueError(
-                f"Unexpected columns in {file_path.name}. "
-                f"Expected at least {expected_columns}, got {actual_columns}"
+                f"Missing required column 'sample #' in {file_path.name}. "
+                f"Available columns: {list(df.columns)}"
+            )
+
+        if len(df.columns) < 2:
+            raise ValueError(
+                f"No ECG lead columns found in {file_path.name}. "
+                f"Available columns: {list(df.columns)}"
             )
 
         return df
 
+    def get_available_leads(self, df: pd.DataFrame) -> list:
+        return [col for col in df.columns if col != "sample #"]
+
     def get_signal(self, df: pd.DataFrame, lead: str = "MLII"):
         if lead not in df.columns:
+            available_leads = self.get_available_leads(df)
             raise ValueError(
-                f"Lead {lead} not found. Available columns: {list(df.columns)}"
+                f"Lead {lead} not found. Available leads: {available_leads}"
             )
 
         return df[lead].astype(float).to_numpy()
