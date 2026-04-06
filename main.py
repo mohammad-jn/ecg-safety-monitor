@@ -3,6 +3,7 @@ import numpy as np
 from src.config import MITBIH_DIR, SAMPLING_RATE_HZ, DEFAULT_LEAD
 from src.data_loader import ECGDataLoader
 from src.rhythm_analyzer import RhythmAnalyzer
+from src.safety_controller import SafetyController
 from src.signal_plotter import plot_ecg_signal
 from src.preprocessor import ECGPreprocessor
 from src.peak_detector import RPeakDetector
@@ -53,6 +54,23 @@ def main() -> None:
     print(f"Average RR interval: {np.mean(rr_intervals):.3f} sec")
     print(f"HRV (std of RR): {hrv:.4f}")
     print(f"Irregular rhythm detected: {is_irregular}")
+
+    controller = SafetyController()
+
+    signal_quality = controller.check_signal_quality(filtered_signal)
+    heart_rate_status = controller.check_heart_rate(heart_rate)
+    peak_status = controller.check_peak_count(peaks)
+
+    overall = controller.overall_status(
+        signal_quality,
+        heart_rate_status,
+        peak_status,
+    )
+
+    print(f"Signal quality: {signal_quality}")
+    print(f"Heart rate status: {heart_rate_status}")
+    print(f"Peak detection status: {peak_status}")
+    print(f"Overall system status: {overall}")
 
     plot_ecg_signal(
         signal=raw_signal,
