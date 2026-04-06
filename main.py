@@ -2,7 +2,8 @@ from src.config import MITBIH_DIR, SAMPLING_RATE_HZ, DEFAULT_LEAD
 from src.data_loader import ECGDataLoader
 from src.signal_plotter import plot_ecg_signal
 from src.preprocessor import ECGPreprocessor
-
+from src.peak_detector import RPeakDetector
+from src.signal_plotter import plot_ecg_with_peaks
 
 def main() -> None:
     loader = ECGDataLoader(MITBIH_DIR)
@@ -32,6 +33,14 @@ def main() -> None:
     start = 0
     end = 2000
 
+    detector = RPeakDetector(SAMPLING_RATE_HZ)
+
+    peaks, _ = detector.detect_peaks(filtered_signal)
+    heart_rate = detector.compute_heart_rate(peaks)
+
+    print(f"Detected {len(peaks)} peaks")
+    print(f"Estimated heart rate: {heart_rate:.2f} BPM")
+
     plot_ecg_signal(
         signal=raw_signal,
         sample_indices=sample_indices,
@@ -54,6 +63,15 @@ def main() -> None:
         title=f"Filtered ECG Record {file_path.stem} - {DEFAULT_LEAD}",
         start=start,
         end=end,
+    )
+
+    plot_ecg_with_peaks(
+        signal=filtered_signal,
+        peaks=peaks,
+        sample_indices=sample_indices,
+        title=f"R-Peaks - Record {file_path.stem}",
+        start=0,
+        end=2000,
     )
 
 
