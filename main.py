@@ -2,6 +2,7 @@ import numpy as np
 
 from src.config import MITBIH_DIR, SAMPLING_RATE_HZ, DEFAULT_LEAD
 from src.data_loader import ECGDataLoader
+from src.diagnostic_engine import DiagnosticEngine
 from src.rhythm_analyzer import RhythmAnalyzer
 from src.safety_controller import SafetyController
 from src.signal_plotter import plot_ecg_signal
@@ -88,6 +89,19 @@ def main() -> None:
     print(f"False positives: {metrics['false_positives']}")
     print(f"Precision: {metrics['precision']:.4f}")
     print(f"Recall: {metrics['recall']:.4f}")
+
+    diagnostic_engine = DiagnosticEngine()
+    diagnostic_result = diagnostic_engine.classify_record(
+    heart_rate=heart_rate,
+    hrv=hrv,
+    irregular_rhythm=is_irregular,
+    signal_quality=signal_quality,
+    peak_status=peak_status,
+    overall_status=overall,
+    )
+
+    print(f"Record interpretation: {diagnostic_result['label']}")
+    print(f"Interpretation note: {diagnostic_result['explanation']}")
 
     plot_ecg_signal(
         signal=raw_signal,
