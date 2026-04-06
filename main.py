@@ -8,6 +8,8 @@ from src.signal_plotter import plot_ecg_signal
 from src.preprocessor import ECGPreprocessor
 from src.peak_detector import RPeakDetector
 from src.signal_plotter import plot_ecg_with_peaks
+from src.annotation_loader import AnnotationLoader
+from src.evaluator import PeakEvaluator
 
 def main() -> None:
     loader = ECGDataLoader(MITBIH_DIR)
@@ -71,6 +73,21 @@ def main() -> None:
     print(f"Heart rate status: {heart_rate_status}")
     print(f"Peak detection status: {peak_status}")
     print(f"Overall system status: {overall}")
+
+    annotation_loader = AnnotationLoader(MITBIH_DIR)
+    evaluator = PeakEvaluator(tolerance_samples=18)
+
+    annotation_file = annotation_loader.get_annotation_file(file_path.stem)
+    reference_peaks = annotation_loader.load_annotation_samples(annotation_file)
+
+    metrics = evaluator.match_peaks(peaks, reference_peaks)
+
+    print(f"Reference beats: {len(reference_peaks)}")
+    print(f"True positives: {metrics['true_positives']}")
+    print(f"False negatives: {metrics['false_negatives']}")
+    print(f"False positives: {metrics['false_positives']}")
+    print(f"Precision: {metrics['precision']:.4f}")
+    print(f"Recall: {metrics['recall']:.4f}")
 
     plot_ecg_signal(
         signal=raw_signal,
