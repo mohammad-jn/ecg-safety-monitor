@@ -4,6 +4,7 @@ import argparse
 from src.config import MITBIH_DIR, SAMPLING_RATE_HZ, DEFAULT_LEAD
 from src.data_loader import ECGDataLoader
 from src.diagnostic_engine import DiagnosticEngine
+from src.report_generator import ReportGenerator
 from src.rhythm_analyzer import RhythmAnalyzer
 from src.safety_controller import SafetyController
 from src.signal_plotter import plot_ecg_signal
@@ -113,6 +114,27 @@ def main() -> None:
 
     print(f"Record interpretation: {diagnostic_result['label']}")
     print(f"Interpretation note: {diagnostic_result['explanation']}")
+
+    report_generator = ReportGenerator()
+
+    report_data = {
+        "record": args.record,
+        "heart_rate": round(heart_rate, 2),
+        "hrv": round(hrv, 4),
+        "precision": round(metrics["precision"], 4),
+        "recall": round(metrics["recall"], 4),
+        "signal_quality": signal_quality,
+        "heart_rate_status": heart_rate_status,
+        "overall_status": overall,
+        "interpretation": diagnostic_result["label"],
+    }
+
+    report_path = report_generator.save_report(
+        report_data,
+        filename=f"{args.record}_report.json",
+    )
+
+    print(f"Report saved to: {report_path}")
 
     plot_ecg_signal(
         signal=raw_signal,

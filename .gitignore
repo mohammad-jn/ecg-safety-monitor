@@ -15,3 +15,5 @@ data/raw/*
 
 mitbih_database/*
 !mitbih_database/.gitkeep
+
+reports/*
