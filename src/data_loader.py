@@ -18,7 +18,9 @@ class ECGDataLoader:
         if df.empty:
             raise ValueError(f"CSV file is empty: {file_path.name}")
 
-        expected_columns = {"'sample #'", "'MLII'", "'V5'"}
+        df.columns = [col.strip().strip("'").strip('"') for col in df.columns]
+
+        expected_columns = {"sample #", "MLII", "V5"}
         actual_columns = set(df.columns)
 
         if not expected_columns.issubset(actual_columns):
@@ -29,7 +31,7 @@ class ECGDataLoader:
 
         return df
 
-    def get_signal(self, df: pd.DataFrame, lead: str = "'MLII'"):
+    def get_signal(self, df: pd.DataFrame, lead: str = "MLII"):
         if lead not in df.columns:
             raise ValueError(
                 f"Lead {lead} not found. Available columns: {list(df.columns)}"
@@ -38,7 +40,7 @@ class ECGDataLoader:
         return df[lead].astype(float).to_numpy()
 
     def get_sample_indices(self, df: pd.DataFrame):
-        sample_col = "'sample #'"
+        sample_col = "sample #"
         if sample_col not in df.columns:
             raise ValueError(f"Column {sample_col} not found.")
 
