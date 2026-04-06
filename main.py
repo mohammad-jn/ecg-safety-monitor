@@ -31,7 +31,7 @@ def main() -> None:
     print(f"Last sample index: {sample_indices[-1]}")
 
     start = 0
-    end = 2000
+    end = 1200
 
     detector = RPeakDetector(SAMPLING_RATE_HZ)
 

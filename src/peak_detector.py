@@ -10,14 +10,19 @@ class RPeakDetector:
         if signal.size == 0:
             raise ValueError("Signal is empty.")
 
-        # Minimum distance between peaks (~200 ms)
-        min_distance = int(0.2 * self.sampling_rate_hz)
+        min_distance = int(0.25 * self.sampling_rate_hz)
 
-        # Detect peaks
+        signal_mean = np.mean(signal)
+        signal_std = np.std(signal)
+
+        min_height = signal_mean + 0.5 * signal_std
+        min_prominence = 0.6 * signal_std
+
         peaks, properties = find_peaks(
             signal,
             distance=min_distance,
-            height=np.mean(signal),  # simple threshold
+            height=min_height,
+            prominence=min_prominence,
         )
 
         return peaks, properties
@@ -26,9 +31,10 @@ class RPeakDetector:
         if len(peaks) < 2:
             raise ValueError("Not enough peaks to compute heart rate.")
 
-        rr_intervals = np.diff(peaks) / self.sampling_rate_hz  # seconds
+        rr_intervals = np.diff(peaks) / self.sampling_rate_hz
         mean_rr = np.mean(rr_intervals)
 
-        heart_rate = 60.0 / mean_rr  # BPM
+        if mean_rr <= 0:
+            raise ValueError("Invalid RR interval encountered.")
 
-        return heart_rate
+        return 60.0 / mean_rr
