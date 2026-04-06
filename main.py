@@ -1,5 +1,8 @@
+import numpy as np
+
 from src.config import MITBIH_DIR, SAMPLING_RATE_HZ, DEFAULT_LEAD
 from src.data_loader import ECGDataLoader
+from src.rhythm_analyzer import RhythmAnalyzer
 from src.signal_plotter import plot_ecg_signal
 from src.preprocessor import ECGPreprocessor
 from src.peak_detector import RPeakDetector
@@ -40,6 +43,16 @@ def main() -> None:
 
     print(f"Detected {len(peaks)} peaks")
     print(f"Estimated heart rate: {heart_rate:.2f} BPM")
+
+    analyzer = RhythmAnalyzer(SAMPLING_RATE_HZ)
+
+    rr_intervals = analyzer.compute_rr_intervals(peaks)
+    hrv = analyzer.compute_hrv(rr_intervals)
+    is_irregular = analyzer.detect_irregular_rhythm(rr_intervals)
+
+    print(f"Average RR interval: {np.mean(rr_intervals):.3f} sec")
+    print(f"HRV (std of RR): {hrv:.4f}")
+    print(f"Irregular rhythm detected: {is_irregular}")
 
     plot_ecg_signal(
         signal=raw_signal,
