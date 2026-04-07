@@ -6,9 +6,9 @@ class RPeakDetector:
     def __init__(
         self,
         sampling_rate_hz: int,
-        min_distance_sec: float = 0.25,
-        height_factor: float = 0.5,
-        prominence_factor: float = 0.6,
+        min_distance_sec: float = 0.4,
+        height_factor: float = 1.3,
+        prominence_factor: float = 1.3,
     ) -> None:
         self.sampling_rate_hz = sampling_rate_hz
         self.min_distance_sec = min_distance_sec
